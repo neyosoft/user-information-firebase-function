@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 
 // setting up firebase functions
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
 const uuidv5 = require('uuid/v5');
+const uuidv4 = require('uuid/v4');
 
 admin.initializeApp();
 
@@ -18,10 +19,11 @@ app.post('/', async (request, response) => {
     const { firstName, lastName, birthday, age, hobby } = userData;
 
     try {
-        const snapshot = await admin
+        await admin
             .database()
             .ref('/users')
             .push({ firstName, lastName, birthday, age, hobby });
+
         return response.status(200).json({
             message: 'User information successfully saved',
             data: userData
@@ -35,7 +37,8 @@ app.post('/', async (request, response) => {
 exports.users = functions.https.onRequest(app);
 
 exports.updateUserID = functions.database.ref('/users/{userID}').onCreate((snapshot) => {
-    const randomUserID = uuidv5('https://enye.tech', uuidv5.URL); // generate random user id
+    const MY_NAMESPACE = uuidv4();
+    const randomUserID = uuidv5('https://enye.tech', MY_NAMESPACE); // generate random user id
 
     // a promise most be return when performing asynchronous request like saving something in the real-time database
     return snapshot.ref.child('userID').set(randomUserID);
