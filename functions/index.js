@@ -6,7 +6,6 @@ const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 
 const uuidv5 = require('uuid/v5');
-const uuidv4 = require('uuid/v4');
 
 admin.initializeApp();
 
@@ -36,10 +35,11 @@ app.post('/', async (request, response) => {
 
 exports.users = functions.https.onRequest(app);
 
-exports.updateUserID = functions.database.ref('/users/{userID}').onCreate((snapshot) => {
-    const MY_NAMESPACE = uuidv4();
-    const randomUserID = uuidv5('https://enye.tech', MY_NAMESPACE); // generate random user id
+exports.updateUserID = functions.database.ref('/users/{userID}').onCreate((snapshot, context) => {
+    const MY_NAMESPACE = 'fc9f8d46-4bb9-4bfc-b5ea-4b1957016a60'; // created using uuid-cli
+
+    const autoGenerateUserID = uuidv5(context.params.userID, MY_NAMESPACE); // generate random user id
 
     // a promise most be return when performing asynchronous request like saving something in the real-time database
-    return snapshot.ref.child('userID').set(randomUserID);
+    return snapshot.ref.child('userID').set(autoGenerateUserID);
 });
